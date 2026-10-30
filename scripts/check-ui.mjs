@@ -1,0 +1,42 @@
+import { chromium } from 'playwright';
+import { mkdir } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+
+await mkdir('.artifacts', { recursive: true });
+const browser = await chromium.launch({ channel: 'msedge', headless: true });
+try {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('http://127.0.0.1:47831');
+  const slider = page.getByRole('slider');
+  assert.equal(await slider.inputValue(), '80');
+  await slider.focus();
+  await page.keyboard.press('ArrowLeft');
+  assert.equal(await slider.inputValue(), '79');
+  await page.keyboard.press('ArrowUp');
+  assert.equal(await slider.inputValue(), '80');
+  await page.keyboard.press('Home');
+  assert.equal(await slider.inputValue(), '1');
+  await page.keyboard.press('End');
+  assert.equal(await slider.inputValue(), '100');
+  await slider.fill('61');
+  await page.getByRole('button', { name: '保存设置', exact: true }).click();
+  await page.getByRole('status').filter({ hasText: /已保存|当前已保存 61%/ }).waitFor();
+  await page.reload();
+  assert.equal(await page.getByRole('slider').inputValue(), '61');
+  await page.evaluate(() => { window.previewReject = true; });
+  await page.getByRole('slider').fill('60');
+  await page.getByRole('button', { name: '保存设置', exact: true }).click();
+  await page.getByRole('alert').waitFor();
+  assert.equal(await page.evaluate(() => localStorage.getItem('dcc-preview-percent')), '61');
+  await page.evaluate(() => { window.previewReject = false; });
+  await page.getByRole('button', { name: '恢复默认 80%', exact: true }).click();
+  await page.waitForFunction(() => localStorage.getItem('dcc-preview-percent') === '80');
+  await page.screenshot({ path: '.artifacts/plugin-detail.png', fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+  await page.screenshot({ path: '.artifacts/plugin-detail-mobile.png', fullPage: true });
+  assert.deepEqual(errors, []);
+  console.log('UI passed: 1% keyboard increments, bounds, save/reload, rejected save, reset, narrow layout.');
+} finally { await browser.close(); }

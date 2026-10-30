@@ -1,0 +1,89 @@
+{
+  "name": "dsh-compact-control",
+  "version": "0.1.0",
+  "description": "使用 DSH 原生上下文压缩功能，仅调整触发自动上下文压缩的阈值。",
+  "type": "module",
+  "license": "MIT",
+  "icon": "icon.svg",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./engine": "./engine.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./presets/*": "./presets/*",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "index.js",
+    "engine.js",
+    "policy.js",
+    "client.js",
+    "icon.svg",
+    "locale",
+    "cordis.patch.yml",
+    "presets",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/*.test.js",
+    "preview": "node scripts/preview.mjs",
+    "test:ui": "node scripts/check-ui.mjs",
+    "prepack": "npm run build"
+  },
+  "dsh": {
+    "displayName": "自动压缩阈值",
+    "icon": "./icon.svg",
+    "bundle": {
+      "patch": [
+        "./cordis.patch.yml",
+        "./presets/standard.patch.yml",
+        "./presets/minimal.patch.yml",
+        "./presets/ptc.patch.yml",
+        "./presets/cordis.patch.yml"
+      ]
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-plugin-manager"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5",
+    "@deepseek-ai/dsh-compaction-basic": "0.2.1-rc.5",
+    "@deepseek-ai/schemastery": "~3.18.5"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "playwright": "^1.56.0",
+    "yaml": "^2.8.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zdjmrq/dsh-compact-control.git"
+  },
+  "homepage": "https://github.com/zdjmrq/dsh-compact-control#readme",
+  "bugs": {
+    "url": "https://github.com/zdjmrq/dsh-compact-control/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "compact",
+    "context"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

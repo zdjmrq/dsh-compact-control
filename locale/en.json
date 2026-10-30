@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Compact Control",
+    "description": "Uses native DSH context compaction and adjusts its automatic trigger threshold."
+  }
+}

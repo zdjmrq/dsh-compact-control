@@ -1,0 +1,5 @@
+- insert:
+    - id: compact-control
+      name: dsh-compact-control
+      config:
+        thresholdPercent: 80
