@@ -1,6 +1,6 @@
 # DeepSeek Harness
 
-`presets/*.patch.yml` derives from `@deepseek-ai/dsh-web-app` 0.2.1-rc.5,
+`presets/*.patch.yml` derives from `@deepseek-ai/dsh-web-app` 0.2.2-rc.1,
 `presets/*.patch.yml`, distributed under the MIT license by DeepSeek.
 Source: https://github.com/deepseek-ai/deepseek-harness
 

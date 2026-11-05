@@ -1,4 +1,4 @@
-# DSH 0.2.1-rc.5 preset configuration, MIT; see THIRD_PARTY_NOTICES.md.
+# DSH 0.2.2-rc.1 preset configuration, MIT; see THIRD_PARTY_NOTICES.md.
 # Only the compaction backend module is replaced.
 - id: preset-cordis
   name: '@deepseek-ai/dsh-agent-preset'
@@ -27,6 +27,9 @@
         disabled: !!js process.platform !== 'win32'
       - id: tool-fs
         name: '@deepseek-ai/dsh-tool-fs'
+        config:
+          # Set true to add the apply_patch tool beside edit.
+          applyPatch: false
       - id: tool-fs-search
         name: '@deepseek-ai/dsh-tool-fs-search'
         config:
@@ -85,14 +88,13 @@
         config:
           - id: tool-subagent-control
             name: '@deepseek-ai/dsh-tool-subagent-control'
-          - id: tool-subagent-list-agents
-            name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
           - id: tool-subagent
             name: '@deepseek-ai/dsh-tool-subagent'
             config:
               provider: spawn
               toolName: subagent
-              modelSelectionSettings: true
+              modelSelection: true
+              modelDiscovery: true
           - id: tool-subagent-fork
             name: '@deepseek-ai/dsh-tool-subagent'
             config:

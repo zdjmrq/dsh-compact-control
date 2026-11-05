@@ -1,0 +1,10 @@
+{
+  "version": "0.2.2-rc.1",
+  "source": "@deepseek-ai/dsh-web-app/presets/*.patch.yml",
+  "sha256": {
+    "standard": "7cc296427249b98cc68d5ab97ebca347c06af38b1c772fe9fd481d24b0e8244e",
+    "minimal": "ce11f79a8dbb265ae141ba7f0b174aaeab2ce052efee2a8a8db497d345d7bef4",
+    "ptc": "19d363a40a33f3bfece5367771353684a177b10038960c467dbb6558891c9fb1",
+    "cordis": "0ea88464b387bd44b4f3e3c3aca1ac0bf1e35b6a71892fcb26340ab9025374f9"
+  }
+}

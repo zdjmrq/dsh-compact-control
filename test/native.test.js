@@ -56,7 +56,18 @@ test('1% does not fail due to the original 16% retained tail', async () => {
 });
 
 test('manual compaction, summarization, region transactions and overflow path are inherited', () => {
-  for (const method of ['compactNow', 'compactRegion', 'summarize', 'compactIfNeeded', '_registerAutomaticCompaction']) {
+  for (const method of ['compactNow', 'compactRegion', 'summarize', 'compactIfNeeded', 'compactPressure', '_registerAutomaticCompaction']) {
     assert.equal(ControlledCompactionEngine.prototype[method], BasicCompactionEngine.prototype[method]);
   }
+});
+
+test('native model-switch pressure checks use the live threshold for the proposed header', async () => {
+  const f = fixture(80);
+  const proposed = { config: { provider: 'test', model: 'other-model', maxTokens: 32000 } };
+  f.setTotal(500000);
+  await f.engine.compactPressure(f.agent, proposed, undefined, true);
+  assert.equal(f.wasPruned(), false);
+  f.setPercent(50);
+  await f.engine.compactPressure(f.agent, proposed, undefined, true);
+  assert.equal(f.wasPruned(), true);
 });

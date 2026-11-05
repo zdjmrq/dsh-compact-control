@@ -31,7 +31,7 @@ export function controlledConfig(base, percent) {
 export function attachControl(engine, getControl) {
   const base = engine.config;
   if (!base || !Array.isArray(base.modelPolicies) || !Object.isFrozen(base)) {
-    throw new Error('DSH 压缩引擎接口不兼容；此版本支持 DSH 0.2.1-rc.5');
+    throw new Error('DSH 压缩引擎接口不兼容；此版本支持 DSH 0.2.2-rc.1');
   }
   let lastPercent;
   let resolved;

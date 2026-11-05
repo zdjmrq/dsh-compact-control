@@ -1,4 +1,4 @@
-# DSH 0.2.1-rc.5 preset configuration, MIT; see THIRD_PARTY_NOTICES.md.
+# DSH 0.2.2-rc.1 preset configuration, MIT; see THIRD_PARTY_NOTICES.md.
 # Only the compaction backend module is replaced.
 - id: preset-minimal
   name: '@deepseek-ai/dsh-agent-preset'

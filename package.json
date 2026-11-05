@@ -1,6 +1,6 @@
 {
   "name": "dsh-compact-control",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "使用 DSH 原生上下文压缩功能，仅调整触发自动上下文压缩的阈值。",
   "type": "module",
   "license": "MIT",
@@ -56,9 +56,9 @@
     }
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "~4.0.5",
-    "@deepseek-ai/dsh-compaction-basic": "0.2.1-rc.5",
-    "@deepseek-ai/schemastery": "~3.18.5"
+    "@deepseek-ai/cordis": "~4.1.0",
+    "@deepseek-ai/dsh-compaction-basic": "0.2.2-rc.1",
+    "@deepseek-ai/schemastery": "~3.19.0"
   },
   "devDependencies": {
     "esbuild": "^0.25.0",
