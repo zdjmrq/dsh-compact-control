@@ -39,3 +39,10 @@ test('model overrides follow global slider while keeping model-specific summary 
   const config = controlledConfig({ ...base, modelPolicies: [{ provider: 'local', model: 'x', thresholdRatio: 0.9, retainTokens: 50000, maxTokens: 4096, headroomTokens: 2048 }] }, 5);
   assert.deepEqual(config.modelPolicies[0], { provider: 'local', model: 'x', thresholdRatio: 0.05, retainRatio: 0.01, maxTokens: 4096, headroomTokens: 2048 });
 });
+
+test('an incompatible engine keeps its original config and can continue running', () => {
+  const config = Object.freeze({ thresholdRatio: 0.8 });
+  const engine = { config };
+  assert.equal(attachControl(engine, () => ({ percent: () => 42 })), false);
+  assert.equal(engine.config, config);
+});

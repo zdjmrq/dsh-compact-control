@@ -28,16 +28,22 @@ export function controlledConfig(base, percent) {
 
 // Read-only policy view. The native engine remains the sole owner of pressure
 // measurement, pruning, summary transactions, locking, retries and /compact.
+const attachedEngines = new WeakSet();
+
 export function attachControl(engine, getControl) {
-  const base = engine.config;
-  if (!base || !Array.isArray(base.modelPolicies) || !Object.isFrozen(base)) {
-    throw new Error('DSH 压缩引擎接口不兼容；此版本支持 DSH 0.2.2-rc.1');
+  if (attachedEngines.has(engine)) return true;
+
+  const descriptor = Object.getOwnPropertyDescriptor(engine, 'config');
+  const base = descriptor?.value;
+  if (!descriptor?.configurable || !base || !Object.isFrozen(base)
+    || !Number.isFinite(base.thresholdRatio) || !Array.isArray(base.modelPolicies)) {
+    return false;
   }
   let lastPercent;
   let resolved;
   Object.defineProperty(engine, 'config', {
-    configurable: true,
-    enumerable: true,
+    configurable: descriptor.configurable,
+    enumerable: descriptor.enumerable,
     get() {
       const control = getControl();
       if (!control) return base;
@@ -49,4 +55,6 @@ export function attachControl(engine, getControl) {
       return resolved;
     },
   });
+  attachedEngines.add(engine);
+  return true;
 }

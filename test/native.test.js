@@ -5,7 +5,7 @@ import BasicCompactionEngine from '@deepseek-ai/dsh-compaction-basic';
 import ControlledCompactionEngine from '../engine.js';
 import { apply } from '../index.js';
 
-function fixture(percent = 80) {
+async function fixture(percent = 80, { enableFirst = true, retainRatio } = {}) {
   let current = percent;
   let total = 0;
   let pruned = false;
@@ -13,16 +13,24 @@ function fixture(percent = 80) {
   ctx.provide('llm', { resolveModelInfo: async () => ({ context: { contextWindow: 1000000 }, defaultMaxTokens: 32000 }) });
   ctx.provide('sessions', {});
   ctx.provide('tokenMeter', { measure: () => ({ totalTokens: total, nodes: [] }) });
-  apply(ctx, { thresholdPercent: { get: () => current } });
-  const engine = new ControlledCompactionEngine(ctx, { auto: false });
+  async function enable() {
+    const fiber = ctx.plugin(ctx => apply(ctx, { thresholdPercent: { get: () => current } }));
+    await fiber.inertia;
+    return fiber;
+  }
+  if (enableFirst) await enable();
+  const scope = ctx.isolate('compaction');
+  const native = scope.plugin(BasicCompactionEngine, { auto: false, retainRatio });
+  await native.inertia;
+  const engine = scope.get('compaction');
   const session = { seq: 0, requestHeader: () => ({ config: { provider: 'test', model: 'model', maxTokens: 32000 } }), surface: { nodes: [] }, eventAt: () => undefined };
   const agent = { session, options: {} };
   ctx.provide('toolResultPruner', { pruneSession: () => { pruned = true; total = 0; } });
-  return { ctx, engine, agent, setPercent: v => { current = v; }, setTotal: v => { total = v; pruned = false; }, wasPruned: () => pruned };
+  return { engine, agent, enable, setPercent: v => { current = v; }, setTotal: v => { total = v; pruned = false; }, wasPruned: () => pruned };
 }
 
 test('uses the actual native pressure loop: below threshold untouched, equality triggers pruning', async () => {
-  const f = fixture(42);
+  const f = await fixture(42);
   f.setTotal(419999);
   assert.equal(await f.engine.compactIfNeeded(f.agent, 'pressure'), null);
   assert.equal(f.wasPruned(), false);
@@ -32,7 +40,7 @@ test('uses the actual native pressure loop: below threshold untouched, equality 
 });
 
 test('live updates apply to an existing engine; 100% retains native output/headroom ceiling', async () => {
-  const f = fixture(80);
+  const f = await fixture(80);
   f.setTotal(500000);
   await f.engine.compactIfNeeded(f.agent, 'pressure');
   assert.equal(f.wasPruned(), false);
@@ -49,7 +57,7 @@ test('live updates apply to an existing engine; 100% retains native output/headr
 });
 
 test('1% does not fail due to the original 16% retained tail', async () => {
-  const f = fixture(1);
+  const f = await fixture(1);
   f.setTotal(10000);
   await f.engine.compactIfNeeded(f.agent, 'pressure');
   assert.equal(f.wasPruned(), true);
@@ -62,7 +70,7 @@ test('manual compaction, summarization, region transactions and overflow path ar
 });
 
 test('native model-switch pressure checks use the live threshold for the proposed header', async () => {
-  const f = fixture(80);
+  const f = await fixture(80);
   const proposed = { config: { provider: 'test', model: 'other-model', maxTokens: 32000 } };
   f.setTotal(500000);
   await f.engine.compactPressure(f.agent, proposed, undefined, true);
@@ -70,4 +78,19 @@ test('native model-switch pressure checks use the live threshold for the propose
   f.setPercent(50);
   await f.engine.compactPressure(f.agent, proposed, undefined, true);
   assert.equal(f.wasPruned(), true);
+});
+
+test('attaches to an already mounted isolated engine and restores native policy when disabled', async () => {
+  const { engine, enable } = await fixture(42, { enableFirst: false, retainRatio: 0.05 });
+  const original = engine.config;
+  const control = await enable();
+  assert.equal(engine.config.thresholdRatio, 0.42);
+  assert.equal(engine.config.retainRatio, 0.05);
+  await control.dispose();
+  assert.equal(engine.config, original);
+
+  const reenabled = await enable();
+  assert.equal(engine.config.thresholdRatio, 0.42);
+  await reenabled.dispose();
+  assert.equal(engine.config, original);
 });
